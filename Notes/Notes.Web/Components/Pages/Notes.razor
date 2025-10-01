@@ -1,0 +1,113 @@
+﻿@page "/notes"
+@using global::Notes.Application.Services
+@using global::Notes.Domain.Enums
+@using global::Notes.Application.DTOs
+@inject INotesService notesService
+@rendermode InteractiveServer
+
+<h5>Notes</h5>
+<EditForm Model="@note" OnValidSubmit="SaveNote">
+    <DataAnnotationsValidator />
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <InputText class="form-control" @bind-Value="note.Title" placeholder="Title" />
+                    <ValidationMessage For="@(() => note.Title)" />
+                </div>
+                <div class="col-md-6">
+                    <InputTextArea class="form-control" @bind-Value="note.Description" placeholder="Description" />
+                    <ValidationMessage For="@(() => note.Description)" />
+                </div>
+                <div class="col-md-2">
+                    <InputSelect class="form-select" @bind-Value="note.Priority">
+                        @foreach (var sev in Enum.GetValues<Priority>())
+                        {
+                            <option value="@sev">@sev</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => note.Priority)" />
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button class="btn btn-primary" type="submit">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@if (notes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!notes.Any())
+{
+    <div class="text-muted">No data found.</div>
+}
+else
+{
+    foreach (var note in notes)
+    {
+        <div class="card mb-3 border-2 @GetCardBorder(note.Priority)" data-note-id="@note.Id">
+            <div class="card-body">
+                @if (editingNote == null || editingNote.Id != note.Id)
+                {
+                    <div class="d-flex justify-content-between align-items-start view-row">
+                        <div class="note-view w-100">
+                            <h5 class="card-title mb-1">
+                                <span class="note-title">@note.Title</span>
+                                <span class="@GetBadge(note.Priority) ms-2 note-priority" data-value="@note.Priority">@note.Priority</span>
+                            </h5>
+                            <p class="card-text note-content">@note.Description</p>
+                            <small class="text-muted">Created On - @note.CreatedAt.ToLocalTime().ToString("g")</small>
+                            @if (note.ModifiedAt is not null)
+                            {
+                                <small class="text-muted"> • Updated On - @note.ModifiedAt.Value.ToLocalTime().ToString("g")</small>
+                            }
+                        </div>
+                        <div class="ms-3 d-flex gap-2 action-buttons">
+                            <button class="btn btn-outline-primary btn-sm" @onclick="() => EditNote(note)">Edit</button>
+                            <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteNote(note.Id)">Delete</button>
+                        </div>
+                    </div>
+                }
+                else if (editingNote != null && editingNote.Id == note.Id)
+                {
+                    <EditForm Model="@editingNote" OnValidSubmit="SaveEdit">
+                        <DataAnnotationsValidator />
+                        <div class="note-edit mt-3">
+                            <div class="row g-2 align-items-start">
+                                <div class="col-md-3">
+                                    <InputText class="form-control" @bind-Value="editingNote.Title" placeholder="Title" />
+                                    <ValidationMessage For="@(() => editingNote.Title)" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <InputTextArea class="form-control" rows="3" @bind-Value="editingNote.Description" placeholder="Description" />
+                                    <ValidationMessage For="@(() => editingNote.Description)" />
+                                </div>
+                                <div class="col-md-2">
+                                    <InputSelect class="form-select" @bind-Value="editingNote.Priority">
+                                        @foreach (var p in Enum.GetValues<Priority>())
+                                        {
+                                            <option value="@p">@p</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                                <div class="col-md-1 d-grid gap-2">
+                                    <button type="submit" class="btn btn-success btn-sm">Save</button>
+                                    <button class="btn btn-outline-secondary btn-sm" @onclick="CancelEdit">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </EditForm>
+                }
+
+            </div>
+        </div>
+    }
+}
+
+
+
+
