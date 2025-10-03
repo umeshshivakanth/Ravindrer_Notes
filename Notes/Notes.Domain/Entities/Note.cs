@@ -5,7 +5,7 @@ namespace Notes.Domain.Entities
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
-        public string Descriprion { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public Priority Priority { get; set; } = Priority.Medium;
         public string CreatedBy { get; set; } = "System";
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;

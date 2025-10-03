@@ -4,9 +4,9 @@ namespace Notes.Web.Components.Pages
 {
     public partial class Notes
     {
-        private IEnumerable<NoteDto> notes;
-        private NoteDto note = new NoteDto();
-        private NoteDto? editingNote = null;
+        private IEnumerable<NoteViewModel> notes = new List<NoteViewModel>();
+        private NoteViewModel note = new NoteViewModel();
+        private NoteViewModel? editingNote = null;
 
         protected override async Task OnInitializedAsync()
         {
@@ -15,25 +15,26 @@ namespace Notes.Web.Components.Pages
 
         private async Task SaveNote()
         {
-            await notesService.AddNoteAsync(note, GetCancellationToken());
+            await notesService.AddNoteAsync(MapViewModelToDto(note), GetCancellationToken());
             await GetNotes();
-            note = new NoteDto();
+            note = new NoteViewModel();
         }
 
         private async Task GetNotes()
         {
-            notes = await notesService.GetAllNotesAsync(GetCancellationToken());
+            var noteDtos = await notesService.GetAllNotesAsync(GetCancellationToken());
+            notes = noteDtos.Select(MapDtoToViewModel);
+
         }
 
-        private void EditNote(NoteDto note)
+        private void EditNote(NoteViewModel note)
         {
-            editingNote = new NoteDto
+            editingNote = new NoteViewModel
             {
                 Id = note.Id,
                 Title = note.Title,
                 Description = note.Description,
-                Priority = note.Priority,
-                CreatedAt = note.CreatedAt
+                Priority = note.Priority
             };
         }
 
@@ -41,7 +42,7 @@ namespace Notes.Web.Components.Pages
         {
             if (editingNote != null)
             {
-                await notesService.UpdateNoteAsync(editingNote, GetCancellationToken());
+                await notesService.UpdateNoteAsync(MapViewModelToDto(editingNote), GetCancellationToken());
                 await GetNotes();
                 editingNote = null;
             }
@@ -78,6 +79,24 @@ namespace Notes.Web.Components.Pages
             Priority.Medium => "border-warning",
             Priority.Low => "border-success",
             _ => "border-secondary"
+        };
+
+        private NoteViewModel MapDtoToViewModel(NoteDto dto) => new NoteViewModel
+        {
+            Id = dto.Id,
+            Title = dto.Title,
+            Description = dto.Description,
+            Priority = dto.Priority,
+            CreatedOn = dto.CreatedAt.ToLocalTime().ToString("g"),
+            UpdatedOn = dto.ModifiedAt?.ToLocalTime().ToString("g"),
+        };
+
+        private NoteDto MapViewModelToDto(NoteViewModel vm) => new NoteDto
+        {
+            Id = vm.Id,
+            Title = vm.Title,
+            Description = vm.Description,
+            Priority = vm.Priority,
         };
     }
 }
