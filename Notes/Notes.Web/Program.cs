@@ -1,12 +1,5 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Notes.Application.Abstractions;
-using Notes.Application.Mapping;
-using Notes.Application.Services;
-using Notes.Infrastructure.Persistence;
-using Notes.Infrastructure.Repositories;
+using Notes.Composition;
 using Notes.Web.Components;
-using Notes.Web.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,17 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddAutoMapper(cfg => { }, typeof(NoteMappingProfile), typeof(NoteApplicationMappingProfile));
+builder.Services.AddNotesPlatform(builder.Configuration);
 
-builder.Services.AddDbContext<NotesDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        sql => sql.MigrationsAssembly("Notes.Infrastructure")
-    )
-);
-
-builder.Services.AddScoped<INoteRepository, NoteRepository>();
-builder.Services.AddScoped<INotesService, NoteService>();
+builder.Services.AddAutoMapper(cfg => { }, typeof(Notes.Web.Mapping.NoteMappingProfile));
 
 var app = builder.Build();
 

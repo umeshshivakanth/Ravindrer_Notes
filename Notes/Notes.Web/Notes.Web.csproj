@@ -16,8 +16,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Notes.Application\Notes.Application.csproj" />
+    <ProjectReference Include="..\Notes.Composition\Notes.Composition.csproj" />
     <ProjectReference Include="..\Notes.Domain\Notes.Domain.csproj" />
-    <ProjectReference Include="..\Notes.Infrastructure\Notes.Infrastructure.csproj" />
+	  <ProjectReference Include="..\Notes.Composition\Notes.Composition.csproj" />
   </ItemGroup>
 
 </Project>
