@@ -15,10 +15,6 @@ namespace Notes.Web.Mapping
                 .ForMember(dest => dest.UpdatedOn, opt => opt.MapFrom(src => src.ModifiedAt.HasValue ? src.ModifiedAt.Value.ToLocalTime().ToString(Defaults.ShortDateTime) : ""));
 
             CreateMap<NoteViewModel, NoteDto>();
-            CreateMap<NoteDto, Note>();
-            CreateMap<Note, NoteDto>()
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedDate))
-                .ForMember(dest => dest.ModifiedAt, opt => opt.MapFrom(src => src.ModifiedDate));
         }
     }
 }
