@@ -2,8 +2,6 @@
 using global::Notes.Application.DTOs;
 using global::Notes.Web.ViewModels;
 using Notes.Domain.Constants;
-using Notes.Domain.Entities;
-
 namespace Notes.Web.Mapping
 {
     public class NoteMappingProfile : Profile
