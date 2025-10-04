@@ -1,5 +1,9 @@
 ﻿using global::Notes.Domain.Enums;
 using global::Notes.Application.DTOs;
+using Notes.Web.ViewModels;
+using Notes.Domain.Constants;
+using AutoMapper;
+using Microsoft.AspNetCore.Components;
 namespace Notes.Web.Components.Pages
 {
     public partial class Notes
@@ -7,24 +11,27 @@ namespace Notes.Web.Components.Pages
         private IEnumerable<NoteViewModel> notes = new List<NoteViewModel>();
         private NoteViewModel note = new NoteViewModel();
         private NoteViewModel? editingNote = null;
+        [Inject]
+        private IMapper _mapper { get; set; } = default!;
+        CancellationTokenSource cts;
 
         protected override async Task OnInitializedAsync()
         {
-            await GetNotes();
+            cts = new CancellationTokenSource();
+            await GetNotesAsync();
         }
 
-        private async Task SaveNote()
+        private async Task SaveNoteAsync()
         {
-            await notesService.AddNoteAsync(MapViewModelToDto(note), GetCancellationToken());
-            await GetNotes();
+            await notesService.AddNoteAsync(_mapper.Map<NoteDto>(note), cts.Token);
+            await GetNotesAsync();
             note = new NoteViewModel();
         }
 
-        private async Task GetNotes()
+        private async Task GetNotesAsync()
         {
-            var noteDtos = await notesService.GetAllNotesAsync(GetCancellationToken());
-            notes = noteDtos.Select(MapDtoToViewModel);
-
+            var noteDtos = await notesService.GetAllNotesAsync(cts.Token);
+            notes = noteDtos.Select(_mapper.Map<NoteViewModel>);
         }
 
         private void EditNote(NoteViewModel note)
@@ -38,12 +45,12 @@ namespace Notes.Web.Components.Pages
             };
         }
 
-        private async Task SaveEdit()
+        private async Task SaveEditAsync()
         {
             if (editingNote != null)
             {
-                await notesService.UpdateNoteAsync(MapViewModelToDto(editingNote), GetCancellationToken());
-                await GetNotes();
+                await notesService.UpdateNoteAsync(_mapper.Map<NoteDto>(editingNote), cts.Token);
+                await GetNotesAsync();
                 editingNote = null;
             }
         }
@@ -55,48 +62,24 @@ namespace Notes.Web.Components.Pages
 
         private async Task DeleteNote(int id)
         {
-            await notesService.DeleteNoteAsync(id, GetCancellationToken());
-            await GetNotes();
+            await notesService.DeleteNoteAsync(id, cts.Token);
+            await GetNotesAsync();
         }
 
-        private CancellationToken GetCancellationToken()
+        private string GetBadgeCss(Priority priority) => priority switch
         {
-            var cts = new CancellationTokenSource();
-            return cts.Token;
-        }
-
-        private string GetBadge(Priority priority) => priority switch
-        {
-            Priority.High => "badge bg-danger",
-            Priority.Medium => "badge bg-warning text-dark",
-            Priority.Low => "badge bg-success",
-            _ => "badge bg-secondary"
+            Priority.High => "note-priority priority-high",
+            Priority.Medium => "note-priority priority-medium",
+            Priority.Low => "note-priority priority-low",
+            _ => "note-priority priority-low",
         };
 
-        private string GetCardBorder(Priority p) => p switch
+        private string GetCardBorderCss(Priority p) => p switch
         {
-            Priority.High => "border-danger",
-            Priority.Medium => "border-warning",
-            Priority.Low => "border-success",
-            _ => "border-secondary"
-        };
-
-        private NoteViewModel MapDtoToViewModel(NoteDto dto) => new NoteViewModel
-        {
-            Id = dto.Id,
-            Title = dto.Title,
-            Description = dto.Description,
-            Priority = dto.Priority,
-            CreatedOn = dto.CreatedAt.ToLocalTime().ToString("g"),
-            UpdatedOn = dto.ModifiedAt?.ToLocalTime().ToString("g"),
-        };
-
-        private NoteDto MapViewModelToDto(NoteViewModel vm) => new NoteDto
-        {
-            Id = vm.Id,
-            Title = vm.Title,
-            Description = vm.Description,
-            Priority = vm.Priority,
+            Priority.High => "priority-border-high",
+            Priority.Medium => "priority-border-medium",
+            Priority.Low => "priority-border-low",
+            _ => "priority-border-low"
         };
     }
 }

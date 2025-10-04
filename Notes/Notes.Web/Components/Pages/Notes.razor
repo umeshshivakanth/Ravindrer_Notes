@@ -7,7 +7,7 @@
 @rendermode InteractiveServer
 
 <h5>Notes</h5>
-<EditForm Model="@note" OnValidSubmit="SaveNote" class="note-form">
+<EditForm Model="@note" OnValidSubmit="SaveNoteAsync" class="note-form">
     <DataAnnotationsValidator />
     <div class="form-card">
         <div class="form-card-body">
@@ -43,14 +43,14 @@
 }
 else if (!notes.Any())
 {
-    <div class="text-muted">No data found.</div>
+    <div class="no-data">No data found.</div>
 }
 else
 {
     <div class="note-list">
         @foreach (var note in notes)
         {
-            <div class="note-card @GetCardBorder(note.Priority)" data-note-id="@note.Id">
+            <div class="note-card @GetCardBorderCss(note.Priority)" data-note-id="@note.Id">
                 <div class="note-card-body">
                     @if (editingNote == null || editingNote.Id != note.Id)
                     {
@@ -58,13 +58,13 @@ else
                             <div class="note-view">
                                 <h5 class="note-card-title">
                                     <span class="note-title">@note.Title</span>
-                                    <span class="@GetBadge(note.Priority) note-priority" data-value="@note.Priority">@note.Priority</span>
+                                    <span class="@GetBadgeCss(note.Priority) note-priority" data-value="@note.Priority">@note.Priority</span>
                                 </h5>
                                 <p class="note-content">@note.Description</p>
-                                <small class="text-muted">Created On - @note.CreatedOn</small>
+                                <small class="note-date">Created On - @note.CreatedOn</small>
                                 @if (!string.IsNullOrEmpty(note.UpdatedOn))
                                 {
-                                    <small class="text-muted"> • Updated On - @note.UpdatedOn</small>
+                                    <small class="note-date"> • Updated On - @note.UpdatedOn</small>
                                 }
                             </div>
                             <div class="note-actions">
@@ -75,7 +75,7 @@ else
                     }
                     else if (editingNote != null && editingNote.Id == note.Id)
                     {
-                        <EditForm Model="@editingNote" OnValidSubmit="SaveEdit" class="note-edit-form">
+                        <EditForm Model="@editingNote" OnValidSubmit="SaveEditAsync" class="note-edit-form">
                             <DataAnnotationsValidator />
                             <div class="row">
                                 <div class="col-md-3">

@@ -1,15 +1,19 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Notes.Application.Abstractions;
 using Notes.Application.Services;
 using Notes.Infrastructure.Persistence;
 using Notes.Infrastructure.Repositories;
 using Notes.Web.Components;
+using Notes.Web.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddAutoMapper(cfg => { }, typeof(NoteMappingProfile));
 
 builder.Services.AddDbContext<NotesDbContext>(options =>
     options.UseSqlServer(
